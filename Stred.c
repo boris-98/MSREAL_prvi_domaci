@@ -135,9 +135,9 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 		}
 		else if(!strcmp(operation, "append"))
 		{
-			if(strlen(rightSide) + strlen(rightSide) > STRING_SIZE - 1)
+			if(strlen(string) + strlen(rightSide) > STRING_SIZE - 1)
 			{
-				printk(KERN_WARNING "Unet je predugacak string\n");
+				printk(KERN_WARNING "Nema dovoljno mesta u baferu\n");
 			}
 			else
 			{
@@ -196,19 +196,22 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 			else
 			{
 				char *seq = strstr(string, rightSide);
-				int rightSide_len = strlen(rightSide);
 				
-				leng = strlen(string);
-			//	leng = strlen(string) - rightSide_len;
-
-				string[leng - strlen(seq)] = '\0';
-
-				for(i = 0; i < rightSide_len; i++)
+				while(seq != NULL)
 				{
-					seq++;
-				}
-				strcat(string, seq);
+					int rightSide_len = strlen(rightSide);
+				
+					leng = strlen(string);
+					string[leng - strlen(seq)] = '\0';
 
+					for(i = 0; i < rightSide_len; i++)
+					{
+						seq++;
+					}
+					strcat(string, seq);
+
+					seq = strstr(string, rightSide);
+				}
 				printk(KERN_INFO "Uspesno izbrisan podstring:%s", rightSide);
 			}
 		}
