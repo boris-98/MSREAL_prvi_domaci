@@ -48,23 +48,123 @@ int main(int argc, char **argv)
 				printf("Trenutni string je:%s\n\n", string);
 				free(string);
 				break;
+
 			case '2':
-				printf("Proba....2\n");
+				fptr = fopen("/dev/stred", "w");
+				if(fptr == NULL)
+				{
+					printf("Greska pri otvaranju /dev/stred\n");
+				}	
+				string = (char*)malloc(string_bytes);
+				
+				printf("Unesi string za upis:\n");
+				getline(&string, &string_bytes, stdin);
+				fprintf(fptr, "string=%s", string);
+
+				if(fclose(fptr))
+				{
+					printf("Greska prilikom zatvaranja /dev/stred\n");
+					return -1;
+				}
+
+				free(string);
 				break;
+
 			case '3':
-				printf("Proba....3\n");
+				fptr = fopen("/dev/stred", "w");
+				if(fptr == NULL)
+				{
+					printf("Greska pri otvaranju /dev/stred\n");
+				}	
+				string = (char*)malloc(string_bytes);
+				
+				printf("Unesi string za konkatanaciju:\n");
+				getline(&string, &string_bytes, stdin);
+				fprintf(fptr, "append=%s", string);
+
+				if(fclose(fptr))
+				{
+					printf("Greska prilikom zatvaranja /dev/stred\n");
+					return -1;
+				}
+
+				free(string);
 				break;
+
 			case '4':
-				printf("Proba....4\n");
+				fptr = fopen("/dev/stred", "w");
+				if(fptr == NULL)
+				{
+					printf("Greska pri otvaranju /dev/stred\n");
+				}	
+
+				fputs("clear\n", fptr);
+
+				if(fclose(fptr))
+				{
+					printf("Greska prilikom zatvaranja /dev/stred\n");
+					return -1;
+				}
+
 				break;
+
 			case '5':
-				printf("Proba....5\n");
+				fptr = fopen("/dev/stred", "w");
+				if(fptr == NULL)
+				{
+					printf("Greska pri otvaranju /dev/stred\n");
+				}	
+
+				fputs("shrink\n", fptr);
+
+				if(fclose(fptr))
+				{
+					printf("Greska prilikom zatvaranja /dev/stred\n");
+					return -1;
+				}
 				break;
+
 			case '6':
-				printf("Proba....6\n");
+				fptr = fopen("/dev/stred", "w");
+				if(fptr == NULL)
+				{
+					printf("Greska pri otvaranju /dev/stred\n");
+				}	
+				string = (char*)malloc(string_bytes);
+				
+				printf("Unesi izraz za brisanje iz stringa:\n");
+				getline(&string, &string_bytes, stdin);
+				fprintf(fptr, "remove=%s", string);
+
+				if(fclose(fptr))
+				{
+					printf("Greska prilikom zatvaranja /dev/stred\n");
+					return -1;
+				}
+
+				free(string);
+				
 				break;
 			case '7':
-				printf("Proba....7\n");
+				fptr = fopen("/dev/stred", "w");
+				if(fptr == NULL)
+				{
+					printf("Greska pri otvaranju /dev/stred\n");
+				}	
+				string = (char*)malloc(string_bytes);
+				
+				printf("Unesi koliko karaktera da se obrise sa kraja:\n");
+				getline(&string, &string_bytes, stdin);
+				fprintf(fptr, "truncate=%s", string);
+
+				if(fclose(fptr))
+				{
+					printf("Greska prilikom zatvaranja /dev/stred\n");
+					return -1;
+				}
+
+				free(string);
+					
 				break;
 			case 'q':
 				printf("pozz\n");
