@@ -111,7 +111,7 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 
 	if(ret==1)//one parameter parsed in sscanf
 	{
-		printk(KERN_INFO "Komanda: %s, nastavak: %s\n", operation, rightSide); 
+		printk(KERN_INFO "Komanda: %s, nastavak:%s\n", operation, rightSide); 
 		
 		if(!strcmp(operation, "string"))
 		{
@@ -211,6 +211,10 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 
 				printk(KERN_INFO "Uspesno izbrisan podstring:%s", rightSide);
 			}
+		}
+		else
+		{
+			printk(KERN_WARNING "Neispravna operacija: %s", operation);
 		}
 	}
 	else
