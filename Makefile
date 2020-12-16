@@ -17,3 +17,12 @@ clean:
 	rm -f *~
 
 endif
+
+all: Aplikacija
+Aplikacija: Aplikacija.o
+	    gcc -o Aplikacija Aplikacija.o
+Aplikacija.o: Aplikacija.c
+	    gcc -c Aplikacija.c
+clean:
+	    rm Aplikacija.o Aplikacija 
+
