@@ -10,12 +10,13 @@ int main(int argc, char **argv)
 	FILE *fptr;
 	size_t op_bytes = 1;
 	size_t string_bytes = STRING_SIZE;
-	char *option = (char*)malloc(op_bytes);
+	char *option = (char*)malloc(op_bytes+1);
+	char *string;
 	unsigned char kraj = 0;
 
 	while(1)
 	{
-		printf("-----Aplikacija za rad sa drajverom-----\n");
+		printf("----------Aplikacija za rad sa drajverom----------\n");
 		printf("Odaberi neku od opcija 1...7 ili q za izlaz\n");
 		printf("\t1: Procitaj trenutno stanje stringa\n");
 		printf("\t2: Upisi novi string\n");
@@ -29,7 +30,23 @@ int main(int argc, char **argv)
 		switch(*option)
 		{
 			case '1':
-				printf("Proba....1\n");
+				fptr = fopen("/dev/stred", "r");
+				if(fptr == NULL)
+				{
+					printf("Greska pri otvaranju /dev/stred\n");
+					return -1;
+				}
+				string = (char*)malloc(string_bytes);
+				getline(&string, &string_bytes, fptr);
+			
+				if(fclose(fptr))
+				{
+					printf("Problem pri zatvranju /dev/stred\n");
+					return -1;
+				}
+				
+				printf("Trenutni string je:%s\n\n", string);
+				free(string);
 				break;
 			case '2':
 				printf("Proba....2\n");
