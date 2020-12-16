@@ -164,6 +164,7 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 			{
 				string[i] = 0;	
 			}
+			leng = 0;
 			printk(KERN_INFO "Uspesno obrisan string\n");
 		}
 		else if(!strcmp(operation, "append"))
@@ -218,7 +219,7 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 					string[leng-1] = '\0';
 					leng--;
 				}
-				printk(KERN_INFO "Uspesno izbrisano poslednjih %d mesta", br);
+				printk(KERN_INFO "Uspesno izbrisano poslednjih %d mesta\n", br);
 			}
 		}
 		else if(!strcmp(operation, "remove"))
@@ -246,12 +247,12 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 
 					seq = strstr(string, rightSide);
 				}
-				printk(KERN_INFO "Uspesno izbrisan podstring:%s", rightSide);
+				printk(KERN_INFO "Uspesno izbrisan podstring:%s\n", rightSide);
 			}
 		}
 		else
 		{
-			printk(KERN_WARNING "Neispravna operacija: %s", operation);
+			printk(KERN_WARNING "Neispravna operacija: %s\n", operation);
 		}
 	}
 	else
