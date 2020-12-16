@@ -9,8 +9,14 @@
 #include <linux/uaccess.h>
 #include <linux/errno.h>
 #include <linux/device.h>
+#include <linux/wait.h>
+#include <linux/semaphore.h>
 #define STRING_SIZE 101
 MODULE_LICENSE("Dual BSD/GPL");
+
+DECLARE_WAIT_QUEUE_HEAD(readQ);
+DECLARE_WAIT_QUEUE_HEAD(writeQ);
+struct semaphore sem;
 
 dev_t my_dev_id;
 static struct class *my_class;
@@ -18,6 +24,7 @@ static struct device *my_device;
 static struct cdev *my_cdev;
 
 char string[STRING_SIZE];
+int leng = 0;            //pomocna promenljiva za duzinu stringa
 int endRead = 0;
 
 int stred_open(struct inode *pinode, struct file *pfile);
@@ -52,11 +59,22 @@ ssize_t stred_read(struct file *pfile, char __user *buffer, size_t length, loff_
 	int ret;
 	char buff[STRING_SIZE];
 	long int len = 0;
+	
 	if (endRead){
 		endRead = 0;
 		return 0;
 	}
 
+	if(down_interruptible(&sem))
+		return -ERESTARTSYS;
+	while(leng <= 0)
+	{
+		up(&sem);
+		if(wait_event_interruptible(readQ, (leng > 0)))
+			return -ERESTARTSYS;
+		if(down_interruptible(&sem))
+			return -ERESTARTSYS;
+	}
 	
 	len = scnprintf(buff, STRING_SIZE, "%s ", string);
 	if(len == 0)
@@ -73,6 +91,10 @@ ssize_t stred_read(struct file *pfile, char __user *buffer, size_t length, loff_
 		printk(KERN_INFO "Succesfully read\n");
 		endRead = 1;
 	}
+	
+	up(&sem);
+	wake_up_interruptible(&writeQ);
+
 
 	return len;
 }
@@ -82,7 +104,6 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 	char buff[STRING_SIZE];	  
 	char operation[STRING_SIZE];    //izdvaja unetu opciju upisa ili modifikacije stringa
 	char rightSide[STRING_SIZE+1];  //izdvaja ostatak komande ukoliko ona sadrzi '=' 
-	int leng = 0;			//pomocna promenljiva za duzinu stringa
 	int i = 0;
 	int ret;
 
@@ -90,6 +111,17 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 	if(ret)
 		return -EFAULT;
 	buff[length-1] = '\0';
+
+	if(down_interruptible(&sem))
+		return -ERESTARTSYS;
+	while(leng >= STRING_SIZE)
+	{
+		up(&sem);
+		if(wait_event_interruptible(writeQ, (leng < STRING_SIZE)))
+			return -ERESTARTSYS;
+		if(down_interruptible(&sem))
+			return -ERESTARTSYS;
+	}
 	
 
 	while(buff[i]!= '=' && buff[i]!= '\0')
@@ -121,6 +153,7 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 			}
 			else
 			{
+				leng = strlen(rightSide);
 				strcpy(string, rightSide);
 				printk(KERN_INFO "Uspesno unet string\n");
 			}
@@ -141,6 +174,7 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 			}
 			else
 			{
+				leng = strlen(string) + strlen(rightSide);
 				strcat(string, rightSide);
 				printk(KERN_INFO "Uspesno dodat string\n");
 			}
@@ -225,7 +259,9 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 		printk(KERN_WARNING "Wrong command format\n");
 	}
 		 
-	
+	up(&sem);
+	wake_up_interruptible(&readQ);	
+
 
 	return length;
 }
@@ -234,6 +270,8 @@ static int __init stred_init(void)
 {
    int ret = 0;
 	int i=0;
+
+	sema_init(&sem, 1);
 
 	//Initialize array
 //	for (i=0; i<STRING_SIZE; i++)
