@@ -12,7 +12,6 @@ int main(int argc, char **argv)
 	size_t string_bytes = STRING_SIZE;
 	char *option = (char*)malloc(op_bytes+1);
 	char *string;
-	unsigned char kraj = 0;
 
 	while(1)
 	{
@@ -168,16 +167,11 @@ int main(int argc, char **argv)
 				break;
 			case 'q':
 				printf("pozz\n");
-				kraj = 1;
-				break;
+				free(option);
+				return 0;
 			default:
 				printf("Greska\n");
 				break;	
-		}
-		if(kraj)
-		{
-			free(option);
-			break;
 		}
 	}	
 
