@@ -166,19 +166,26 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 			}
 			leng = 0;
 			printk(KERN_INFO "Uspesno obrisan string\n");
+			wake_up_interruptible(&writeQ);	  //budjenje za append
 		}
 		else if(!strcmp(operation, "append"))
-		{
+		{	
 			if(strlen(string) + strlen(rightSide) > STRING_SIZE - 1)
 			{
 				printk(KERN_WARNING "Nema dovoljno mesta u baferu\n");
+	
+				while(leng + strlen(rightSide) > STRING_SIZE - 1)
+				{
+					up(&sem);
+					if(wait_event_interruptible(writeQ, leng + strlen(rightSide) < STRING_SIZE - 1))
+						return -ERESTARTSYS;
+					if(down_interruptible(&sem))
+						return -ERESTARTSYS;
+				}
 			}
-			else
-			{
-				leng = strlen(string) + strlen(rightSide);
-				strcat(string, rightSide);
-				printk(KERN_INFO "Uspesno dodat string\n");
-			}
+			leng = strlen(string) + strlen(rightSide);
+			strcat(string, rightSide);
+			printk(KERN_INFO "Uspesno dodat string\n");
 		}
 		else if(!strcmp(operation, "shrink"))
 		{
@@ -202,6 +209,7 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 			string[leng] = '\0';
 			
 			printk(KERN_INFO "Uspesno uklonjeni razmaci sa krajeva\n");
+			wake_up_interruptible(&writeQ);     //budjenje za append
 		}
 		else if(!strcmp(operation, "truncate"))
 		{
@@ -220,6 +228,7 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 					leng--;
 				}
 				printk(KERN_INFO "Uspesno izbrisano poslednjih %d mesta\n", br);
+				wake_up_interruptible(&writeQ);     //budjenje za append
 			}
 		}
 		else if(!strcmp(operation, "remove"))
@@ -248,6 +257,7 @@ ssize_t stred_write(struct file *pfile, const char __user *buffer, size_t length
 					seq = strstr(string, rightSide);
 				}
 				printk(KERN_INFO "Uspesno izbrisan podstring:%s\n", rightSide);
+				wake_up_interruptible(&writeQ);    //budjenje za append
 			}
 		}
 		else
